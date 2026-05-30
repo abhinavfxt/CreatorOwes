@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CreatorOwes — hold them accountable</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080808; --bg2: #101010; --bg3: #161616;
+    --border: #202020; --border2: #2a2a2a;
+    --text: #f0ede8; --muted: #555; --muted2: #888;
+    --lime: #c8f562; --red: #ff4d6d; --blue: #4dc9ff; --yellow: #ffd166;
+    --lime-bg: #1a2e0a; --red-bg: #2e0a14; --blue-bg: #0a1e2e; --yellow-bg: #2e2200;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:15px; line-height:1.6; }
+  ::-webkit-scrollbar { width:4px; } ::-webkit-scrollbar-track { background:var(--bg); } ::-webkit-scrollbar-thumb { background:#222; border-radius:2px; }
+
+  nav {
+    position:sticky; top:0; z-index:100;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 28px; height:56px;
+    background:rgba(8,8,8,0.95); backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--border);
+  }
+  .logo { font-family:'Syne',sans-serif; font-size:20px; font-weight:900; letter-spacing:-0.8px; cursor:pointer; }
+  .logo em { color:var(--lime); font-style:normal; }
+  .logo-dot { display:inline-block; width:6px; height:6px; background:var(--red); border-radius:50%; margin-left:2px; vertical-align:middle; animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .nav-links { display:flex; gap:4px; }
+  .nav-link { font-size:13px; padding:6px 14px; border-radius:20px; border:1px solid transparent; color:var(--muted); cursor:pointer; transition:all 0.15s; background:transparent; }
+  .nav-link:hover { color:var(--text); border-color:var(--border2); }
+  .nav-link.active { background:var(--lime); color:#080808; font-weight:600; border-color:var(--lime); }
+  .nav-right { display:flex; gap:8px; align-items:center; }
+  .btn-add { font-size:13px; padding:7px 16px; border-radius:20px; background:var(--lime); color:#080808; font-weight:600; border:none; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.15s; }
+  .btn-add:hover { background:#d4f77a; }
+  .btn-ghost { font-size:13px; padding:7px 16px; border-radius:20px; background:transparent; color:var(--muted2); border:1px solid var(--border2); cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.15s; }
+  .btn-ghost:hover { color:var(--text); border-color:#444; }
+
+  .page { display:none; animation:fadeIn 0.2s ease; }
+  .page.active { display:block; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+  /* HOME */
+  .hero { padding:56px 28px 40px; border-bottom:1px solid var(--border); position:relative; overflow:hidden; }
+  .hero-eyebrow { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--muted); margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+  .eyebrow-line { width:24px; height:1px; background:var(--border2); }
+  .hero-h1 { font-family:'Syne',sans-serif; font-size:clamp(36px,7vw,64px); font-weight:900; line-height:0.95; letter-spacing:-2px; margin-bottom:18px; }
+  .hero-h1 .lime { color:var(--lime); } .hero-h1 .red { color:var(--red); }
+  .hero-sub { font-size:15px; color:var(--muted2); max-width:380px; line-height:1.7; }
+
+  .stats-strip { display:grid; grid-template-columns:repeat(3,1fr); border-bottom:1px solid var(--border); }
+  .stat-cell { padding:20px 28px; border-right:1px solid var(--border); }
+  .stat-cell:last-child { border-right:none; }
+  .stat-n { font-family:'Syne',sans-serif; font-size:28px; font-weight:900; }
+  .stat-n.lime{color:var(--lime);} .stat-n.red{color:var(--red);} .stat-n.yellow{color:var(--yellow);}
+  .stat-l { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1.5px; margin-top:2px; }
+
+  .filter-bar { display:flex; gap:6px; padding:16px 28px; border-bottom:1px solid var(--border); overflow-x:auto; }
+  .filter-bar::-webkit-scrollbar{display:none;}
+  .filter-btn { white-space:nowrap; font-size:12px; padding:6px 16px; border-radius:20px; border:1px solid var(--border2); color:var(--muted); cursor:pointer; background:transparent; font-family:'DM Sans',sans-serif; transition:all 0.15s; }
+  .filter-btn:hover{color:var(--text);border-color:#444;}
+  .filter-btn.on{background:var(--bg3);color:var(--text);border-color:#444;}
+
+  .trending-section { padding:16px 28px; border-bottom:1px solid var(--border); }
+  .trending-label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:2px; margin-bottom:10px; }
+  .trending-chips { display:flex; gap:6px; flex-wrap:wrap; }
+  .t-chip { font-size:12px; padding:5px 12px; border-radius:20px; border:1px solid var(--border); color:var(--muted2); cursor:pointer; transition:all 0.15s; }
+  .t-chip:hover{border-color:var(--border2);color:var(--text);}
+  .t-chip.hot{border-color:rgba(255,77,109,0.3);color:var(--red);}
+
+  .feed { padding:16px 28px; display:flex; flex-direction:column; gap:12px; }
+  .empty-state { text-align:center; padding:60px 28px; color:var(--muted); }
+  .empty-state .big { font-family:'Syne',sans-serif; font-size:40px; margin-bottom:12px; }
+  .empty-state p { font-size:15px; }
+
+  .p-card { background:var(--bg2); border:1px solid var(--border); border-radius:16px; padding:18px 20px; cursor:pointer; transition:all 0.2s; }
+  .p-card:hover{border-color:var(--border2);transform:translateY(-1px);}
+  .p-card-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .creator-info { display:flex; align-items:center; gap:10px; }
+  .av { width:34px; height:34px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; }
+  .av-l{background:var(--lime-bg);color:var(--lime);} .av-r{background:var(--red-bg);color:var(--red);} .av-b{background:var(--blue-bg);color:var(--blue);} .av-y{background:var(--yellow-bg);color:var(--yellow);}
+  .creator-name{font-size:14px;font-weight:600;}
+  .plat-tag{font-size:10px;color:var(--muted);border:1px solid var(--border);border-radius:10px;padding:2px 8px;}
+  .status-badge{font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap;}
+  .sb-pending{background:var(--blue-bg);color:var(--blue);border:1px solid rgba(77,201,255,0.2);}
+  .sb-hot{background:var(--yellow-bg);color:var(--yellow);border:1px solid rgba(255,209,102,0.2);}
+  .sb-broken{background:var(--red-bg);color:var(--red);border:1px solid rgba(255,77,109,0.2);}
+  .sb-done{background:var(--lime-bg);color:var(--lime);border:1px solid rgba(200,245,98,0.2);}
+  .p-text{font-size:15px;line-height:1.6;color:#c0bdb8;margin-bottom:14px;}
+  .p-text strong{color:var(--text);}
+  .prog-wrap{margin-bottom:14px;}
+  .prog-bg{height:4px;background:#1e1e1e;border-radius:4px;overflow:hidden;margin-bottom:6px;}
+  .prog-fill{height:100%;border-radius:4px;transition:width 0.6s cubic-bezier(0.4,0,0.2,1);}
+  .pf-lime{background:var(--lime);} .pf-red{background:var(--red);} .pf-blue{background:var(--blue);} .pf-yellow{background:var(--yellow);}
+  .prog-meta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);}
+  .prog-meta .curr{color:var(--muted2);}
+  .p-footer{display:flex;align-items:center;justify-content:space-between;}
+  .vote-btns{display:flex;gap:6px;}
+  .vb{font-size:12px;padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s;}
+  .vb:hover{border-color:var(--border2);color:var(--muted2);}
+  .vb.voted{background:var(--bg3);color:var(--text);border-color:#444;}
+  .p-time{font-size:11px;color:var(--muted);}
+
+  /* LEADERBOARD */
+  .page-header{padding:40px 28px 28px;border-bottom:1px solid var(--border);}
+  .page-title{font-family:'Syne',sans-serif;font-size:32px;font-weight:900;letter-spacing:-1px;}
+  .page-title .lime{color:var(--lime);} .page-title .red{color:var(--red);}
+  .page-sub{font-size:14px;color:var(--muted2);margin-top:6px;}
+  .lb-section{padding:24px 28px;}
+  .lb-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+  .lb-label::after{content:'';flex:1;height:1px;background:var(--border);}
+  .lb-list{display:flex;flex-direction:column;gap:8px;}
+  .lb-row{display:flex;align-items:center;gap:14px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;transition:border-color 0.15s;cursor:pointer;}
+  .lb-row:hover{border-color:var(--border2);}
+  .lb-rank{font-family:'Syne',sans-serif;font-size:20px;font-weight:900;color:var(--border2);width:28px;text-align:center;}
+  .lb-rank.top{color:var(--lime);} .lb-rank.shame{color:var(--red);}
+  .lb-info{flex:1;}
+  .lb-name{font-size:14px;font-weight:600;}
+  .lb-meta{font-size:12px;color:var(--muted);}
+  .lb-score{font-family:'Syne',sans-serif;font-size:22px;font-weight:900;text-align:right;}
+  .lb-score.lime{color:var(--lime);} .lb-score.red{color:var(--red);}
+  .lb-score-label{font-size:10px;color:var(--muted);text-align:right;}
+
+  /* ADD PROMISE */
+  .add-page{max-width:600px;margin:0 auto;padding:40px 28px;}
+  .add-title{font-family:'Syne',sans-serif;font-size:28px;font-weight:900;letter-spacing:-1px;margin-bottom:6px;}
+  .add-sub{font-size:14px;color:var(--muted2);margin-bottom:32px;}
+  .form-group{margin-bottom:20px;}
+  .form-label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;display:block;}
+  .form-input,.form-select,.form-textarea{width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:12px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color 0.15s;}
+  .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:#444;}
+  .form-textarea{resize:vertical;min-height:90px;}
+  .form-select{appearance:none;cursor:pointer;}
+  .form-select option{background:#1a1a1a;color:var(--text);}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .form-hint{font-size:12px;color:var(--muted);margin-top:6px;}
+  .goal-type-btns{display:flex;gap:8px;flex-wrap:wrap;}
+  .gtb{padding:8px 18px;border-radius:10px;border:1px solid var(--border2);background:transparent;color:var(--muted2);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;transition:all 0.15s;}
+  .gtb:hover{border-color:#444;color:var(--text);}
+  .gtb.sel{background:var(--lime-bg);border-color:rgba(200,245,98,0.4);color:var(--lime);font-weight:600;}
+  .submit-btn{width:100%;padding:16px;border-radius:12px;background:var(--lime);color:#080808;font-weight:700;border:none;cursor:pointer;font-family:'Syne',sans-serif;font-size:16px;font-weight:800;letter-spacing:-0.3px;margin-top:8px;transition:all 0.15s;}
+  .submit-btn:hover{background:#d4f77a;transform:translateY(-1px);}
+  .submit-btn:disabled{background:#333;color:#666;cursor:not-allowed;transform:none;}
+
+  /* DETAIL */
+  .detail-back{padding:16px 28px;border-bottom:1px solid var(--border);font-size:13px;color:var(--muted2);cursor:pointer;display:flex;align-items:center;gap:6px;}
+  .detail-back:hover{color:var(--text);}
+  .detail-body{padding:32px 28px;max-width:680px;}
+  .detail-creator-row{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
+  .detail-promise{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;letter-spacing:-0.5px;line-height:1.3;margin-bottom:24px;}
+  .detail-prog-section{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:24px;}
+  .detail-prog-title{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px;}
+  .detail-prog-numbers{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;}
+  .detail-curr{font-family:'Syne',sans-serif;font-size:32px;font-weight:900;}
+  .detail-goal{font-size:14px;color:var(--muted2);}
+  .detail-pct{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;}
+  .detail-actions{display:flex;gap:8px;margin-bottom:28px;flex-wrap:wrap;}
+  .da-btn{padding:10px 20px;border-radius:10px;border:1px solid var(--border2);background:transparent;color:var(--muted2);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;transition:all 0.15s;}
+  .da-btn:hover{border-color:#444;color:var(--text);}
+  .da-btn.lime-active{background:var(--lime-bg);border-color:rgba(200,245,98,0.3);color:var(--lime);}
+  .da-btn.red-active{background:var(--red-bg);border-color:rgba(255,77,109,0.3);color:var(--red);}
+
+  /* TOAST */
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--lime);color:#080808;padding:12px 24px;border-radius:30px;font-weight:700;font-size:14px;z-index:999;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none;white-space:nowrap;}
+  .toast.show{transform:translateX(-50%) translateY(0);}
+  .toast.error{background:var(--red);color:#fff;}
+
+  /* LOADING */
+  .loading{text-align:center;padding:40px;color:var(--muted);font-size:14px;}
+  .spinner{width:24px;height:24px;border:2px solid var(--border2);border-top-color:var(--lime);border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto 12px;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* LOGIN */
+  .login-page{max-width:420px;margin:0 auto;padding:40px 28px;}
+
+  @media(max-width:600px){
+    nav{padding:0 16px;}
+    .hero,.feed,.filter-bar,.trending-section,.lb-section,.page-header,.add-page,.detail-body,.login-page{padding-left:16px;padding-right:16px;}
+    .hero-h1{font-size:34px;}
+    .nav-links{display:none;}
+    .form-row{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo" onclick="showPage('home')">creator<em>owes</em><span class="logo-dot"></span></div>
+  <div class="nav-links">
+    <div class="nav-link active" id="nav-home" onclick="navTo('home')">feed</div>
+    <div class="nav-link" id="nav-leaderboard" onclick="navTo('leaderboard')">leaderboard</div>
+  </div>
+  <div class="nav-right">
+    <div id="auth-buttons">
+      <button class="btn-ghost" onclick="showPage('login')">log in</button>
+      <button class="btn-add" onclick="showPage('add')">+ add promise</button>
+    </div>
+    <div id="user-info" style="display:none;align-items:center;gap:10px;">
+      <span id="user-name" style="font-size:13px;color:var(--muted2)"></span>
+      <button class="btn-ghost" onclick="signOut()">sign out</button>
+      <button class="btn-add" onclick="showPage('add')">+ add promise</button>
+    </div>
+  </div>
+</nav>
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <div class="hero">
+    <div class="hero-eyebrow"><span class="eyebrow-line"></span>fan accountability platform</div>
+    <div class="hero-h1">they said it.<br><span class="red">don't</span> let them<br><span class="lime">forget it.</span></div>
+    <div class="hero-sub">track every creator promise — likes, comments, subs. hold them accountable fr.</div>
+  </div>
+  <div class="stats-strip">
+    <div class="stat-cell"><div class="stat-n lime" id="stat-total">—</div><div class="stat-l">promises tracked</div></div>
+    <div class="stat-cell"><div class="stat-n yellow" id="stat-hit">—</div><div class="stat-l">goals reached</div></div>
+    <div class="stat-cell"><div class="stat-n red" id="stat-broken">—</div><div class="stat-l">broken 💀</div></div>
+  </div>
+  <div class="filter-bar">
+    <button class="filter-btn on" onclick="setFilter(this,'all')">all</button>
+    <button class="filter-btn" onclick="setFilter(this,'hot')">🔥 almost there</button>
+    <button class="filter-btn" onclick="setFilter(this,'broken')">💀 broken</button>
+    <button class="filter-btn" onclick="setFilter(this,'fulfilled')">✅ fulfilled</button>
+    <button class="filter-btn" onclick="setFilter(this,'pending')">⏳ pending</button>
+  </div>
+  <div class="trending-section">
+    <div class="trending-label">trending</div>
+    <div class="trending-chips">
+      <div class="t-chip hot">#facereveal</div>
+      <div class="t-chip hot">#hairchallenge</div>
+      <div class="t-chip">#subgoal</div>
+      <div class="t-chip">#100kgoal</div>
+      <div class="t-chip">#ghosted</div>
+    </div>
+  </div>
+  <div class="feed" id="promise-feed">
+    <div class="loading"><div class="spinner"></div>loading promises...</div>
+  </div>
+</div>
+
+<!-- LEADERBOARD -->
+<div class="page" id="page-leaderboard">
+  <div class="page-header">
+    <div class="page-title"><span class="lime">trust</span> scores</div>
+    <div class="page-sub">ranked by % of promises actually fulfilled</div>
+  </div>
+  <div class="lb-section">
+    <div class="lb-label">🏆 most trustworthy</div>
+    <div class="lb-list" id="lb-trust">
+      <div class="loading"><div class="spinner"></div>loading...</div>
+    </div>
+  </div>
+  <div class="lb-section">
+    <div class="lb-label">💀 hall of shame</div>
+    <div class="lb-list" id="lb-shame">
+      <div class="loading"><div class="spinner"></div>loading...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD PROMISE -->
+<div class="page" id="page-add">
+  <div class="add-page">
+    <div class="add-title">add a promise 📌</div>
+    <div class="add-sub">caught a creator making a promise? log it before they ghost.</div>
+    <div class="form-group">
+      <label class="form-label">creator name</label>
+      <input class="form-input" id="f-creator" type="text" placeholder="e.g. MrBeast, KSI, Charli...">
+    </div>
+    <div class="form-group">
+      <label class="form-label">platform</label>
+      <select class="form-select" id="f-platform">
+        <option value="">select platform</option>
+        <option>YouTube</option>
+        <option>TikTok</option>
+        <option>Instagram</option>
+        <option>X (Twitter)</option>
+        <option>Twitch</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">what did they promise?</label>
+      <textarea class="form-textarea" id="f-text" placeholder='"if this gets 1M likes i will shave my head" — use their exact words'></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">goal type</label>
+      <div class="goal-type-btns">
+        <button class="gtb sel" onclick="selGoal(this,'likes')">👍 Likes</button>
+        <button class="gtb" onclick="selGoal(this,'comments')">💬 Comments</button>
+        <button class="gtb" onclick="selGoal(this,'subscribers')">👥 Subscribers</button>
+        <button class="gtb" onclick="selGoal(this,'views')">👀 Views</button>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">goal number</label>
+        <input class="form-input" id="f-goal" type="number" placeholder="e.g. 1000000">
+        <div class="form-hint">how many needed</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">current count</label>
+        <input class="form-input" id="f-current" type="number" placeholder="check right now">
+        <div class="form-hint">check the video</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">link to original video/post</label>
+      <input class="form-input" id="f-url" type="url" placeholder="https://youtube.com/watch?v=...">
+    </div>
+    <button class="submit-btn" id="submit-btn" onclick="submitPromise()">submit promise 🔒</button>
+  </div>
+</div>
+
+<!-- DETAIL -->
+<div class="page" id="page-detail">
+  <div class="detail-back" onclick="showPage('home')">← back to feed</div>
+  <div class="detail-body">
+    <div class="detail-creator-row">
+      <div class="av av-l" id="d-av"></div>
+      <div>
+        <div style="font-size:15px;font-weight:600" id="d-name"></div>
+        <div style="font-size:12px;color:var(--muted)" id="d-plat"></div>
+      </div>
+      <div style="margin-left:auto" id="d-badge"></div>
+    </div>
+    <div class="detail-promise" id="d-text"></div>
+    <div class="detail-prog-section">
+      <div class="detail-prog-title">progress</div>
+      <div class="detail-prog-numbers">
+        <div class="detail-curr lime" id="d-curr"></div>
+        <div class="detail-goal" id="d-goal"></div>
+        <div class="detail-pct lime" id="d-pct"></div>
+      </div>
+      <div class="prog-bg" style="height:6px"><div class="prog-fill pf-lime" id="d-bar" style="width:0%"></div></div>
+    </div>
+    <div class="detail-actions">
+      <button class="da-btn" id="btn-watch" onclick="voteDetail('watching')">👀 watching (<span id="cnt-watch">0</span>)</button>
+      <button class="da-btn" id="btn-callout" onclick="voteDetail('callout')">📢 call out (<span id="cnt-callout">0</span>)</button>
+      <button class="da-btn" id="btn-respect" onclick="voteDetail('respect')">🫡 respect (<span id="cnt-respect">0</span>)</button>
+      <button class="da-btn" onclick="shareDetail()">share ↗</button>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px 20px;display:flex;align-items:center;gap:12px;" id="d-vid-box">
+      <div style="width:40px;height:40px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;" onclick="openVid()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+      </div>
+      <div>
+        <div style="font-size:14px;font-weight:500" id="d-vid-title">watch original video</div>
+        <div style="font-size:12px;color:var(--muted)" id="d-vid-sub"></div>
+      </div>
+    </div>
+    <div style="margin-top:20px;padding:16px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:1.5px;">mark as</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="da-btn" onclick="markStatus('fulfilled')">✅ promise fulfilled</button>
+        <button class="da-btn" onclick="markStatus('broken')">💀 promise broken</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div class="page" id="page-login">
+  <div class="login-page">
+    <div class="add-title">welcome 👋</div>
+    <div class="add-sub">log in to submit promises and vote.</div>
+    <button onclick="googleSignIn()" style="width:100%;padding:14px;border-radius:12px;background:#fff;color:#080808;font-weight:600;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:15px;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:32px;transition:opacity 0.15s;">
+      <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.47 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      continue with google
+    </button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, increment, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, signOut as fbSignOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCW20OoalsVCd-LFqd0vWEOjopr9jiwOyc",
+  authDomain: "creatorowes.firebaseapp.com",
+  databaseURL: "https://creatorowes-default-rtdb.firebaseio.com",
+  projectId: "creatorowes",
+  storageBucket: "creatorowes.firebasestorage.app",
+  messagingSenderId: "100465330514",
+  appId: "1:100465330514:web:b6c9f6f2f592f63258928b"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+
+let allPromises = [];
+let currentFilter = 'all';
+let currentDetailId = null;
+let selectedGoalType = 'likes';
+let currentUser = null;
+
+// AUTH
+onAuthStateChanged(auth, user => {
+  currentUser = user;
+  if(user) {
+    document.getElementById('auth-buttons').style.display = 'none';
+    document.getElementById('user-info').style.display = 'flex';
+    document.getElementById('user-name').textContent = user.displayName?.split(' ')[0] || 'hey!';
+  } else {
+    document.getElementById('auth-buttons').style.display = 'flex';
+    document.getElementById('user-info').style.display = 'none';
+  }
+});
+
+window.googleSignIn = async () => {
+  try {
+    await signInWithPopup(auth, provider);
+    showToast('logged in! welcome 🫡');
+    showPage('home');
+  } catch(e) { showToast('login failed. try again.', true); }
+};
+
+window.signOut = async () => {
+  await fbSignOut(auth);
+  showToast('signed out 👋');
+};
+
+// LOAD PROMISES
+async function loadPromises() {
+  try {
+    const q = query(collection(db, 'promises'), orderBy('createdAt', 'desc'));
+    const snap = await getDocs(q);
+    allPromises = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderFeed(allPromises);
+    updateStats();
+    loadLeaderboard();
+  } catch(e) {
+    document.getElementById('promise-feed').innerHTML = '<div class="empty-state"><div class="big">📭</div><p>no promises yet. be the first to add one!</p></div>';
+  }
+}
+
+function updateStats() {
+  document.getElementById('stat-total').textContent = allPromises.length;
+  document.getElementById('stat-hit').textContent = allPromises.filter(p => p.status === 'fulfilled' || p.status === 'broken' || getStatus(p) === 'hot').length;
+  document.getElementById('stat-broken').textContent = allPromises.filter(p => p.status === 'broken').length;
+}
+
+function getStatus(p) {
+  if(p.status === 'broken') return 'broken';
+  if(p.status === 'fulfilled') return 'fulfilled';
+  const pct = (p.current_count / p.goal_number) * 100;
+  if(pct >= 80) return 'hot';
+  return 'pending';
+}
+
+function fmt(n) {
+  n = Number(n);
+  if(n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+  if(n >= 1000) return (n/1000).toFixed(0) + 'K';
+  return n.toString();
+}
+
+function pct(p) { return Math.min(100, Math.round((p.current_count / p.goal_number) * 100)); }
+
+const avColors = ['av-l','av-r','av-b','av-y'];
+function avColor(name) { return avColors[name.charCodeAt(0) % 4]; }
+function initials(name) { return name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2); }
+
+const statusMap = {
+  hot: { label:'🔥 almost there', cls:'sb-hot', fill:'pf-yellow' },
+  broken: { label:'💀 ghosted', cls:'sb-broken', fill:'pf-red' },
+  pending: { label:'⏳ in progress', cls:'sb-pending', fill:'pf-blue' },
+  fulfilled: { label:'✅ kept', cls:'sb-done', fill:'pf-lime' },
+};
+
+function renderCard(p) {
+  const st = getStatus(p);
+  const s = statusMap[st];
+  const pc = pct(p);
+  const avc = avColor(p.creator_name || 'x');
+  const ini = initials(p.creator_name || 'X');
+  const timeAgo = p.createdAt ? timeAgoStr(p.createdAt.toDate()) : '';
+  return `
+  <div class="p-card" onclick="openDetail('${p.id}')">
+    <div class="p-card-top">
+      <div class="creator-info">
+        <div class="av ${avc}">${ini}</div>
+        <div class="creator-name">${p.creator_name}</div>
+        <div class="plat-tag">${p.platform}</div>
+      </div>
+      <div class="status-badge ${s.cls}">${s.label}</div>
+    </div>
+    <div class="p-text">${p.promise_text}</div>
+    <div class="prog-wrap">
+      <div class="prog-bg"><div class="prog-fill ${s.fill}" style="width:${pc}%"></div></div>
+      <div class="prog-meta"><span class="curr">${fmt(p.current_count)} ${p.goal_type}</span><span>goal: ${fmt(p.goal_number)}</span></div>
+    </div>
+    <div class="p-footer">
+      <div class="vote-btns">
+        <button class="vb" onclick="event.stopPropagation();quickVote(this,'${p.id}','watching')">👀 ${p.votes_watching || 0}</button>
+        <button class="vb" onclick="event.stopPropagation();quickVote(this,'${p.id}','callout')">📢 ${p.votes_callout || 0}</button>
+      </div>
+      <div class="p-time">${timeAgo}</div>
+    </div>
+  </div>`;
+}
+
+function timeAgoStr(date) {
+  const diff = Math.floor((Date.now() - date) / 1000);
+  if(diff < 60) return 'just now';
+  if(diff < 3600) return Math.floor(diff/60) + 'm ago';
+  if(diff < 86400) return Math.floor(diff/3600) + 'h ago';
+  return Math.floor(diff/86400) + 'd ago';
+}
+
+window.renderFeed = function(list) {
+  const filtered = currentFilter === 'all' ? list : list.filter(p => getStatus(p) === currentFilter);
+  const feed = document.getElementById('promise-feed');
+  if(filtered.length === 0) {
+    feed.innerHTML = '<div class="empty-state"><div class="big">🔍</div><p>no promises found for this filter.</p></div>';
+  } else {
+    feed.innerHTML = filtered.map(renderCard).join('');
+  }
+}
+
+window.setFilter = function(btn, type) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  currentFilter = type;
+  renderFeed(allPromises);
+}
+
+window.quickVote = async function(btn, id, type) {
+  btn.classList.add('voted');
+  try {
+    await updateDoc(doc(db, 'promises', id), { [`votes_${type}`]: increment(1) });
+    const p = allPromises.find(x => x.id === id);
+    if(p) p[`votes_${type}`] = (p[`votes_${type}`] || 0) + 1;
+  } catch(e) {}
+}
+
+window.openDetail = function(id) {
+  const p = allPromises.find(x => x.id === id);
+  if(!p) return;
+  currentDetailId = id;
+  const st = getStatus(p);
+  const s = statusMap[st];
+  const pc = pct(p);
+  const avc = avColor(p.creator_name || 'x');
+  const ini = initials(p.creator_name || 'X');
+  document.getElementById('d-av').className = 'av ' + avc;
+  document.getElementById('d-av').textContent = ini;
+  document.getElementById('d-name').textContent = p.creator_name;
+  document.getElementById('d-plat').textContent = p.platform;
+  document.getElementById('d-badge').innerHTML = `<div class="status-badge ${s.cls}">${s.label}</div>`;
+  document.getElementById('d-text').textContent = '"' + p.promise_text + '"';
+  document.getElementById('d-curr').textContent = fmt(p.current_count) + ' ' + p.goal_type;
+  document.getElementById('d-goal').textContent = 'goal: ' + fmt(p.goal_number);
+  document.getElementById('d-pct').textContent = pc + '%';
+  document.getElementById('d-bar').style.width = pc + '%';
+  document.getElementById('cnt-watch').textContent = p.votes_watching || 0;
+  document.getElementById('cnt-callout').textContent = p.votes_callout || 0;
+  document.getElementById('cnt-respect').textContent = p.votes_respect || 0;
+  document.getElementById('d-vid-title').textContent = 'watch original ' + p.platform + ' post';
+  document.getElementById('d-vid-sub').textContent = 'posted by ' + p.creator_name;
+  window._currentVidUrl = p.video_url;
+  showPage('detail');
+}
+
+window.openVid = function() {
+  if(window._currentVidUrl) window.open(window._currentVidUrl, '_blank');
+  else showToast('no video link added for this promise');
+}
+
+window.voteDetail = async function(type) {
+  if(!currentDetailId) return;
+  try {
+    await updateDoc(doc(db, 'promises', currentDetailId), { [`votes_${type}`]: increment(1) });
+    const cnt = document.getElementById('cnt-' + type);
+    cnt.textContent = parseInt(cnt.textContent) + 1;
+    const btnMap = { watching:'btn-watch', callout:'btn-callout', respect:'btn-respect' };
+    const clsMap = { watching:'', callout:'red-active', respect:'lime-active' };
+    document.getElementById(btnMap[type]).className = 'da-btn ' + clsMap[type];
+    showToast(type === 'watching' ? 'added to watchlist 👀' : type === 'callout' ? 'callout submitted 📢' : 'respect given 🫡');
+  } catch(e) { showToast('error saving vote', true); }
+}
+
+window.markStatus = async function(status) {
+  if(!currentDetailId) return;
+  if(!currentUser) { showToast('log in to mark promises'); return; }
+  try {
+    await updateDoc(doc(db, 'promises', currentDetailId), { status });
+    const p = allPromises.find(x => x.id === currentDetailId);
+    if(p) p.status = status;
+    openDetail(currentDetailId);
+    showToast(status === 'fulfilled' ? '✅ marked as fulfilled!' : '💀 marked as broken!');
+  } catch(e) { showToast('error updating status', true); }
+}
+
+window.shareDetail = function() {
+  const url = window.location.href;
+  if(navigator.clipboard) navigator.clipboard.writeText(url);
+  showToast('link copied! share it everywhere 🔗');
+}
+
+// SUBMIT
+window.selGoal = function(btn, type) {
+  document.querySelectorAll('.gtb').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+  selectedGoalType = type;
+}
+
+window.submitPromise = async function() {
+  if(!currentUser) { showToast('please log in first to submit a promise'); showPage('login'); return; }
+  const creator = document.getElementById('f-creator').value.trim();
+  const platform = document.getElementById('f-platform').value;
+  const text = document.getElementById('f-text').value.trim();
+  const goal = parseInt(document.getElementById('f-goal').value);
+  const current = parseInt(document.getElementById('f-current').value) || 0;
+  const url = document.getElementById('f-url').value.trim();
+  if(!creator || !platform || !text || !goal) { showToast('fill in all fields please!', true); return; }
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true; btn.textContent = 'submitting...';
+  try {
+    await addDoc(collection(db, 'promises'), {
+      creator_name: creator, platform, promise_text: text,
+      goal_type: selectedGoalType, goal_number: goal,
+      current_count: current, video_url: url, status: 'pending',
+      votes_watching: 0, votes_callout: 0, votes_respect: 0,
+      submitted_by: currentUser.uid, createdAt: serverTimestamp()
+    });
+    showToast('promise submitted! we\'re watching 👀');
+    document.getElementById('f-creator').value = '';
+    document.getElementById('f-platform').value = '';
+    document.getElementById('f-text').value = '';
+    document.getElementById('f-goal').value = '';
+    document.getElementById('f-current').value = '';
+    document.getElementById('f-url').value = '';
+    await loadPromises();
+    setTimeout(() => showPage('home'), 1000);
+  } catch(e) { showToast('error submitting. try again.', true); }
+  btn.disabled = false; btn.textContent = 'submit promise 🔒';
+}
+
+// LEADERBOARD
+async function loadLeaderboard() {
+  const creators = {};
+  allPromises.forEach(p => {
+    if(!creators[p.creator_name]) creators[p.creator_name] = { name: p.creator_name, platform: p.platform, total: 0, fulfilled: 0, broken: 0 };
+    creators[p.creator_name].total++;
+    if(p.status === 'fulfilled') creators[p.creator_name].fulfilled++;
+    if(p.status === 'broken') creators[p.creator_name].broken++;
+  });
+  const list = Object.values(creators).filter(c => c.total > 0);
+  const trusted = [...list].sort((a,b) => (b.fulfilled/b.total) - (a.fulfilled/a.total)).slice(0,5);
+  const shamed = [...list].sort((a,b) => (b.broken/b.total) - (a.broken/a.total)).filter(c => c.broken > 0).slice(0,5);
+
+  document.getElementById('lb-trust').innerHTML = trusted.length ? trusted.map((c,i) => `
+    <div class="lb-row">
+      <div class="lb-rank top">${i+1}</div>
+      <div class="av ${avColor(c.name)}">${initials(c.name)}</div>
+      <div class="lb-info"><div class="lb-name">${c.name}</div><div class="lb-meta">${c.platform} · ${c.total} promise${c.total>1?'s':''}</div></div>
+      <div><div class="lb-score lime">${c.total > 0 ? Math.round((c.fulfilled/c.total)*100) : 0}%</div><div class="lb-score-label">trust score</div></div>
+    </div>`).join('') : '<div style="padding:20px;color:var(--muted);font-size:14px">no fulfilled promises yet</div>';
+
+  document.getElementById('lb-shame').innerHTML = shamed.length ? shamed.map((c,i) => `
+    <div class="lb-row">
+      <div class="lb-rank shame">${i+1}</div>
+      <div class="av ${avColor(c.name)}">${initials(c.name)}</div>
+      <div class="lb-info"><div class="lb-name">${c.name}</div><div class="lb-meta">${c.platform} · ${c.broken} broken</div></div>
+      <div><div class="lb-score red">${Math.round((c.broken/c.total)*100)}%</div><div class="lb-score-label">broken rate</div></div>
+    </div>`).join('') : '<div style="padding:20px;color:var(--muted);font-size:14px">no broken promises yet 🎉</div>';
+}
+
+// NAVIGATION
+window.showPage = function(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  window.scrollTo(0,0);
+  if(id === 'leaderboard') loadLeaderboard();
+}
+
+window.navTo = function(id) {
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  document.getElementById('nav-' + id).classList.add('active');
+  showPage(id);
+}
+
+window.showToast = function(msg, isError) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (isError ? ' error' : '') + ' show';
+  setTimeout(() => t.className = 'toast' + (isError ? ' error' : ''), 2800);
+}
+
+// INIT
+loadPromises();
+</script>
+</body>
+</html>
